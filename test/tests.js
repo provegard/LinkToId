@@ -311,19 +311,19 @@ describe("The LinkToId extension", function() {
 });
 
 (function() {
-  var jasmineEnv = jasmine.getEnv();
-  jasmineEnv.updateInterval = 250;
+	var jasmineEnv = jasmine.getEnv();
+	jasmineEnv.updateInterval = 250;
 
-  var htmlReporter = new jasmine.HtmlReporter();
-  jasmineEnv.addReporter(htmlReporter);
+	var htmlReporter = new jasmine.HtmlReporter();
+	jasmineEnv.addReporter(htmlReporter);
 
-  jasmineEnv.specFilter = function(spec) {
-    return htmlReporter.specFilter(spec);
-  };
+	jasmineEnv.specFilter = function(spec) {
+		return htmlReporter.specFilter(spec);
+	};
 
-	document.addEventListener("DOMContentLoaded", function() {
-    jasmineEnv.execute();
+	$(document).ready(function() {
+		jasmineEnv.execute();
 	});
-	
+
 })();
 
