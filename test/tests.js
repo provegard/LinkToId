@@ -1,4 +1,4 @@
-// Copyright (c) 2012 Per Rovegård, http://rovegard.com
+// Copyright (c) 2012 Per Rovegard, http://rovegard.com
 // The contents of this file are subject to the terms and conditions of the MIT 
 // license, see http://per.mit-license.org.
 
