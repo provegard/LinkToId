@@ -20,6 +20,16 @@ if that element does not have a non-empty ID.
 
 The trigger keys are Ctrl + Alt. This is currently hard-coded in the extension.
 
+## Installing
+
+The extension is not (yet) published in the Chrome Web Store. For now, go to the
+Downloads page in GitHub and select one of the binary packages (CRX files). Chrome
+will prompt you to install the extension.
+
+For example, to install version 0.1, download the following file (in Chrome):
+
+https://github.com/downloads/provegard/LinkToId/LinkToId-v0.1.crx
+
 ## License
 
 The code is released under the MIT license. See http://per.mit-license.org for
