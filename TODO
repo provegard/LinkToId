@@ -1,1 +1,5 @@
-* Make things configurable... trigger keys as well as when to ignore a target element.
+* Make things configurable:
+  - Trigger keys
+  - When to ignore a target element (e.g., when it's off-screen, or too far away)
+* Localization
+* Make it a hybrid Chrome/Firefox extension, if possible!
