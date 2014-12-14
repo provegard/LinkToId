@@ -1,6 +1,6 @@
 {
 	"name": "LinkToId",
-	"version": "0.1",
+	"version": "0.0.1",
 	"manifest_version": 2,
 	"description": "This extension helps to identify and use linkable IDs within a page.",
   "content_scripts": [
