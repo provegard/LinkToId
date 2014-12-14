@@ -1,0 +1,31 @@
+{
+  "name": "LinkToId",
+  "version": "0.0.1",
+  "description": "Chrome extension to allow linking to IDs on a page.",
+  "main": "index.js",
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "test": "grunt test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/provegard/LinkToId.git"
+  },
+  "author": "Per Rovegard <per@rovegard.se>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/provegard/LinkToId/issues"
+  },
+  "homepage": "https://github.com/provegard/LinkToId",
+  "devDependencies": {
+    "grunt-contrib-coffee": "^0.12.0",
+    "grunt-karma": "^0.9.0",
+    "jasmine-core": "^2.1.3",
+    "karma": "^0.12.28",
+    "karma-chrome-launcher": "^0.1.7",
+    "karma-coffee-preprocessor": "^0.2.1",
+    "karma-jasmine": "^0.3.2"
+  }
+}
