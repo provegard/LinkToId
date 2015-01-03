@@ -9,11 +9,32 @@ describe "The LinkToId extension", ->
   findTooltip = -> $(".tt-#{extId}")
   content = null
   
+  createMouseEvent = (type, triggerPressed, pageX, pageY) ->
+    props =
+      view: window
+      bubbles: true
+      cancelable: true
+      ctrlKey: triggerPressed
+      altKey: triggerPressed
+    props.clientX = pageX if pageX?
+    props.clientY = pageY if pageY?
+    new MouseEvent type, props
+    
+  createKeyEvent = (type, triggerPressed) ->
+    props =
+      view: window
+      bubbles: true
+      cancelable: true
+      ctrlKey: triggerPressed
+      altKey: triggerPressed
+    new KeyboardEvent type, props
+  
   beforeEach ->
     content = document.querySelector('link[rel="import"]').import
     importedBody = $(content).find "body"
     $("body").append "<div id='playground'></div>"
     $("#playground").append importedBody.html()
+    window.location.hash = ""
   
   afterEach ->
     $("#playground").remove()
@@ -80,73 +101,53 @@ describe "The LinkToId extension", ->
       h1 = $(".page_title")[0]
       expect(LinkToId.findTarget(h1).id).toBe "pageTitle"
     
-  describe "the update function", ->
+  describe "the mousedown handler", ->
 
     describe "when the trigger keys are pressed", ->
       
       beforeEach ->
-        @evt = $.Event "mousedown",
-          ctrlKey: true
-          altKey: true
-          target: $("#div1")[0]
-        @loc = hash: ""
-        LinkToId.enter @evt, @loc
-        LinkToId.update @evt, @loc
+        @evt = createMouseEvent 'mousedown', true
+        target = document.getElementById 'div1'
+        target.dispatchEvent @evt
       
-      it "sets the fragment/hash to the ID of an element when the trigger keys are pressed", ->
-        expect(@loc.hash).toBe "div1"
+      it "sets the fragment/hash to the ID of the target", ->
+        expect(window.location.hash).toBe "#div1"
       
       it "prevents default event handling", ->
-        expect(@evt.isDefaultPrevented()).toBe true
+        expect(@evt.defaultPrevented).toBe true
   
-      it "stops event propagation", ->
-        expect(@evt.isPropagationStopped()).toBe true
-
       it "removes any showing tooltip", ->
         expect(findTooltip().length).toBe 0
 
     describe "when the trigger keys are NOT pressed", ->
       
       beforeEach ->
-        @evt = $.Event "mousedown",
-          ctrlKey: true
-          altKey: false
-          target: $("#div1")[0]
-        @loc = hash: ""
-        LinkToId.update @evt, @loc
+        @evt = createMouseEvent 'mousedown', false
+        target = document.getElementById 'div1'
+        target.dispatchEvent @evt
   
       it "doesn't set the fragment/hash", ->
-        expect(@loc.hash).toBe ""
+        expect(window.location.hash).toBe ""
     
     describe "when the fragment/hash is the same as the ID of the element being clicked", ->
       
       beforeEach ->
-        @evt = $.Event "mousedown",
-          ctrlKey: true
-          altKey: true
-          target: $("#div1")[0]
-        @loc = hash: ""
-        Object.defineProperty @loc, "hash",
-          get: -> "#div1"
-          set: (value) => @updatedHash = value
-        LinkToId.update @evt, @loc
+        window.location.hash = 'div1'
+        @evt = createMouseEvent 'mousedown', true
+        target = document.getElementById 'div1'
+        target.dispatchEvent @evt
       
-      it "doesn't re-set the fragment/hash", ->
-        expect(@updatedHash).toBeUndefined()
+      it "ignores the event", ->
+        expect(@evt.defaultPrevented).toBe false
   
-  describe "the enter function", ->
+  describe "the mousemove handler", ->
     
     describe "when the trigger keys are pressed", ->
       
       beforeEach ->
-        @elem = document.getElementById 'div1'
-        @evt = $.Event "mouseover",
-          ctrlKey: true
-          altKey: true
-          target: @elem
-          pageX: 10
-          pageY: 10
-        LinkToId.enter @evt, hash: ""
+        @evt = createMouseEvent 'mousemove', true, 10, 10
+        target = document.getElementById 'div1'
+        target.dispatchEvent @evt
         @tooltip = findTooltip()
       
       it "creates a tooltip", ->
@@ -161,7 +162,8 @@ describe "The LinkToId extension", ->
         expect(@tooltip[0].style.top).toBe "10px"
   
       it "reuses any existing tooltip when called repeatedly", ->
-        LinkToId.enter @evt, hash: "" # second time
+        target = document.getElementById 'div1'
+        target.dispatchEvent createMouseEvent 'mousemove', true, 10, 10
         newTooltip = findTooltip()
         expect(newTooltip.length).toBe 1
   
@@ -169,14 +171,8 @@ describe "The LinkToId extension", ->
         expect(@tooltip.text()).toContain "#div1"
 
       it "updates the tooltip text as the mouse is moved to another element", ->
-        elem = document.getElementById 'level1'
-        evt = $.Event "mouseover",
-          ctrlKey: true
-          altKey: true
-          target: elem
-          pageX: 10
-          pageY: 10
-        LinkToId.enter evt, hash: ""
+        target = document.getElementById 'level1'
+        target.dispatchEvent createMouseEvent 'mousemove', true, 10, 10
         expect(@tooltip.text()).toContain "#level1"
 
       it "makes the tooltip a child of the body element", ->
@@ -185,105 +181,65 @@ describe "The LinkToId extension", ->
     describe "when the trigger keys are NOT pressed", ->
       
       beforeEach ->
-        @elem = $("#div1")[0]
-        @evt1 = $.Event "mouseover", 
-          ctrlKey: true
-          altKey: true
-          target: @elem
-          pageX: 10
-          pageY: 10
-        @evt = $.Event "mouseover",
-          ctrlKey: true
-          altKey: false
-          target: @elem
-          pageX: 10
-          pageY: 10
-        LinkToId.enter @evt1, hash: ""
-        LinkToId.enter @evt, hash: ""
+        target = document.getElementById 'div1'
+        target.dispatchEvent createMouseEvent 'mousemove', true, 10, 10
+        target.dispatchEvent createMouseEvent 'mousemove', false, 10, 10
         @tooltip = findTooltip()
       
       it "removes any existing tooltip", ->
         expect(@tooltip.length).toBe 0
-
     
     describe "when the fragment/hash is the same as the ID of the element being entered", ->
       
       beforeEach ->
-        @evt = $.Event "mousedown",
-          ctrlKey: true 
-          altKey: true
-          target: $("#div1")[0]
-        @loc = hash: "#div1"
-        LinkToId.enter @evt, @loc
-        @tooltip = findTooltip();
+        window.location.hash = 'div1'
+        target = document.getElementById 'div1'
+        target.dispatchEvent createMouseEvent 'mousemove', true, 10, 10
+        @tooltip = findTooltip()
       
       it "doesn't create a tooltip", ->
         expect(@tooltip.length).toBe 0
 
-  describe "the leave function", ->
+  describe "the mouseout handler", ->
 
     beforeEach ->
-      @elem = $("div1")[0]
-      @evt = $.Event "mouseover", 
-        ctrlKey: true
-        altKey: true
-        target: @elem
-        pageX: 10
-        pageY: 10
-      LinkToId.enter @evt, hash: ""
-      LinkToId.leave @evt
+      target = document.getElementById 'div1'
+      target.dispatchEvent createMouseEvent 'mousemove', true, 10, 10
+      target.dispatchEvent createMouseEvent 'mouseout', true
       @tooltip = findTooltip()
     
     it "removes any tooltip", ->
       expect(@tooltip.length).toBe 0
     
     it "ignores non-existant tooltip", ->
-      LinkToId.leave @evt
+      target = document.getElementById 'div1'
+      target.dispatchEvent createMouseEvent 'mouseout', true
       expect(findTooltip().length).toBe 0
   
-  describe "the cancel function", ->
+  describe "the keyup handler", ->
 
     describe "when the trigger keys are no longer pressed", ->
       
       beforeEach ->
-        @elem = $("#div1")[0]
-        @evt1 = $.Event "mouseover", 
-          ctrlKey: true
-          altKey: true
-          target: @elem
-          pageX: 10
-          pageY: 10
-        @evt = $.Event "keyup", 
-          ctrlKey: false
-          altKey: false
-          target: @elem
-        LinkToId.enter @evt1, hash: ""
-        LinkToId.cancel @evt
+        target = document.getElementById 'div1'
+        target.dispatchEvent createMouseEvent 'mousemove', true, 10, 10
+        target.dispatchEvent createKeyEvent 'keyup', false
         @tooltip = findTooltip()
       
       it "removes any tooltip", ->
         expect(@tooltip.length).toBe 0
       
       it "ignores non-existant tooltip", ->
-        LinkToId.cancel @evt
+        target = document.getElementById 'div1'
+        target.dispatchEvent createKeyEvent 'keyup', false
         expect(findTooltip().length).toBe 0
 
     describe "when the trigger keys are still pressed", ->
       
       beforeEach ->
-        @elem = $("#div1")[0]
-        @evt1 = $.Event "mouseover", 
-          ctrlKey: true
-          altKey: true
-          target: @elem
-          pageX: 10
-          pageY: 10
-        @evt = $.Event "keyup", 
-          ctrlKey: true
-          altKey: true
-          target: @elem
-        LinkToId.enter @evt1, hash: ""
-        LinkToId.cancel @evt
+        target = document.getElementById 'div1'
+        target.dispatchEvent createMouseEvent 'mousemove', true, 10, 10
+        target.dispatchEvent createKeyEvent 'keyup', true
         @tooltip = findTooltip()
       
       it "doesn't remove any tooltip", ->

@@ -9,7 +9,8 @@ window[chrome.i18n.getMessage "@@extension_id"] = do (module = window[chrome.i18
   extId          = chrome.i18n.getMessage "@@extension_id"
   tooltipClass   = "tt-#{extId}"
   tooltipElement = null
-
+  location       = window.location
+  
   # Get the distance from the top of an element to the "page top".
   getElementTop = (e) ->
     top = 0
@@ -51,23 +52,21 @@ window[chrome.i18n.getMessage "@@extension_id"] = do (module = window[chrome.i18
       target = target.parentNode
     if target? and hasId target then target else null
   
-  # Determines if the supplied ID matches the fragment/hash of the supplied
-  # location object.
-  idMatchesHash = (id, location) -> "#" + id == location.hash
+  # Determines if the supplied ID matches the fragment/hash of the Location object.
+  idMatchesHash = (id) -> "#" + id == location.hash
   
   # Used as a click handler. Updates the fragment/hash if the event is active
   # and a suitable target element can be found. Any showing tooltip is removed.
-  update = (event, location) ->
+  update = (event) ->
     return unless isActive event
     
     target = findTarget event.target
 
     # Update the hash (fragment) if we have a target, but only if
     # the current hash isn't already equal to the target ID.
-    if target? and not idMatchesHash target.id, location
-      # Prevent further processing of this event.
+    if target? and not idMatchesHash target.id
+      # Prevent default processing of this event.
       event.preventDefault()
-      event.stopPropagation()
       
       removeTooltip()
       location.hash = target.id
@@ -86,12 +85,12 @@ window[chrome.i18n.getMessage "@@extension_id"] = do (module = window[chrome.i18
   # Used as a mouse move handler. Creates the tooltip if necessary, otherwise
   # simply moves it to the correct location. If the current fragment/hash is
   # equal to the ID of the target element, no tooltip is created.
-  enter = (event, location) ->
+  enter = (event) ->
     if isActive event
       target = findTarget event.target
 
       # Add a class if we have a target!
-      if target? and not idMatchesHash target.id, location
+      if target? and not idMatchesHash target.id
         tooltip = findTooltip()
         unless tooltip
           # No active tooltip. Use the existing element if it has been created,
@@ -123,9 +122,9 @@ window[chrome.i18n.getMessage "@@extension_id"] = do (module = window[chrome.i18
   # Removes any showing tooltip if the event isn't an active one.
   cancel = (event) -> removeTooltip() unless isActive event
 
-  document.addEventListener 'mousedown', (event) -> update event, window.location
+  document.addEventListener 'mousedown', update
   document.addEventListener 'keyup', cancel
-  document.addEventListener 'mousemove', (event) -> enter event, window.location
+  document.addEventListener 'mousemove', enter
   document.addEventListener 'mouseout', leave
 
   # Exported for testing
@@ -133,10 +132,6 @@ window[chrome.i18n.getMessage "@@extension_id"] = do (module = window[chrome.i18
     isBlock: isBlock
     hasId: hasId
     findTarget: findTarget
-    enter: enter
-    leave: leave
-    update: update
     getElementTop: getElementTop
-    cancel: cancel
   
   module
