@@ -6,7 +6,7 @@ module.exports = (grunt) ->
     default:
       options:
         browsers: ["Chrome"]
-        files: ["ext/jquery*.js", "test/fakeExt.coffee", "ext/linktoid.js", "test/*.css", "test/*.html", "test/*_spec.coffee"]
+        files: ["test/jquery*.js", "test/fakeExt.coffee", "ext/linktoid.js", "test/*.css", "test/*.html", "test/*_spec.coffee"]
         singleRun: not grunt.option "debug"
         timeout: 120000
         preprocessors:

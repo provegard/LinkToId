@@ -14,7 +14,6 @@ describe "The LinkToId extension", ->
     importedBody = $(content).find "body"
     $("body").append "<div id='playground'></div>"
     $("#playground").append importedBody.html()
-    debugger
   
   afterEach ->
     $("#playground").remove()
@@ -22,7 +21,6 @@ describe "The LinkToId extension", ->
     # Global cleanup, so that individual tests don't need to
     # bother cleaning up after themselves.
     findTooltip().remove()
-        
   
   describe "The getElementTop function", ->
 
@@ -141,7 +139,7 @@ describe "The LinkToId extension", ->
     describe "when the trigger keys are pressed", ->
       
       beforeEach ->
-        @elem = $("#div1")[0]
+        @elem = document.getElementById 'div1'
         @evt = $.Event "mouseover",
           ctrlKey: true
           altKey: true
@@ -169,6 +167,17 @@ describe "The LinkToId extension", ->
   
       it "includes target element ID in the tooltip text", ->
         expect(@tooltip.text()).toContain "#div1"
+
+      it "updates the tooltip text as the mouse is moved to another element", ->
+        elem = document.getElementById 'level1'
+        evt = $.Event "mouseover",
+          ctrlKey: true
+          altKey: true
+          target: elem
+          pageX: 10
+          pageY: 10
+        LinkToId.enter evt, hash: ""
+        expect(@tooltip.text()).toContain "#level1"
 
       it "makes the tooltip a child of the body element", ->
         expect(@tooltip[0].parentNode.tagName).toBe "BODY"

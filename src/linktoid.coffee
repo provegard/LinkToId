@@ -4,9 +4,11 @@ The contents of this file are subject to the terms and conditions of the MIT
 license, see http://per.mit-license.org/2012.
 ###
 
-window[chrome.i18n.getMessage "@@extension_id"] = do ($ = jQuery, module = window[chrome.i18n.getMessage "@@extension_id"] or {}) ->
+window[chrome.i18n.getMessage "@@extension_id"] = do (module = window[chrome.i18n.getMessage "@@extension_id"] or {}) ->
   
-  extId = chrome.i18n.getMessage "@@extension_id"
+  extId          = chrome.i18n.getMessage "@@extension_id"
+  tooltipClass   = "tt-#{extId}"
+  tooltipElement = null
 
   # Get the distance from the top of an element to the "page top".
   getElementTop = (e) ->
@@ -21,7 +23,7 @@ window[chrome.i18n.getMessage "@@extension_id"] = do ($ = jQuery, module = windo
    
     top
 
-  # Determines if an event is "active," or "triggering." To make this extension
+  # Determines if an event is active/triggering. To make this extension
   # more useful, the condition should be configurable.
   isActive = (event) -> event.ctrlKey and event.altKey
 
@@ -31,7 +33,10 @@ window[chrome.i18n.getMessage "@@extension_id"] = do ($ = jQuery, module = windo
     cs.display == "block"
 
   # Removes the tooltip if it's found. Otherwise, does nothing.
-  removeTooltip = -> findTooltip()?.remove()
+  removeTooltip = -> 
+    tooltip = findTooltip()
+    if tooltip
+      tooltip.parentNode.removeChild tooltip
 
   # Determines if an element has a non-empty ID attribute.
   hasId = (e) -> (e.id or "").length > 0
@@ -68,14 +73,12 @@ window[chrome.i18n.getMessage "@@extension_id"] = do ($ = jQuery, module = windo
       location.hash = target.id
   
   # Finds the currently showing tooltip. Returns the jQuery object if found,
-  # null otherwise.
-  findTooltip = ->
-    tooltip = $(".tt-" + extId)
-    if tooltip.length > 0 then tooltip else null
+  # undefined  otherwise.
+  findTooltip = -> document.getElementsByClassName(tooltipClass)[0]
   
   # Creates the text to be used for the tooltip.
   createTooltipText = (id, distance) ->
-    htmlText = "Click to navigate to <span>#" + id + "</span>!"
+    htmlText = "Click to navigate to <span>##{id}</span>!"
     if distance
       htmlText += " It's #{distance} pixels to the north, by the way."
     htmlText
@@ -89,23 +92,28 @@ window[chrome.i18n.getMessage "@@extension_id"] = do ($ = jQuery, module = windo
 
       # Add a class if we have a target!
       if target? and not idMatchesHash target.id, location
-        distance = event.pageY - getElementTop target
-        htmlText = createTooltipText target.id, distance
-
         tooltip = findTooltip()
-        unless tooltip?
-          tooltip = $("<span/>")
-            .attr "class", "tt-" + extId
-            .html htmlText
+        unless tooltip
+          # No active tooltip. Use the existing element if it has been created,
+          # otherwise create it.
+          unless tooltipElement
+            tooltipElement = document.createElement 'SPAN'
+            tooltipElement.className = tooltipClass
+          tooltip = tooltipElement
             
           # The tooltip is added as a child to BODY so that the position becomes
           # relative to the page rather than a specific element.
-          $("body").append(tooltip)
-        
+          body = document.getElementsByTagName('BODY')[0]
+          body.appendChild tooltip
+
+        # Update the tooltip text
+        distance = event.pageY - getElementTop target
+        htmlText = createTooltipText target.id, distance
+        tooltip.innerHTML = htmlText
+
         # Position the tooltip adjacent to the mouse location.
-        tooltip
-          .css "top", event.pageY
-          .css "left", event.pageX + 10
+        tooltip.style.top = event.pageY + 'px'
+        tooltip.style.left = (event.pageX + 10) + 'px'
     else
       removeTooltip()
   
@@ -115,12 +123,10 @@ window[chrome.i18n.getMessage "@@extension_id"] = do ($ = jQuery, module = windo
   # Removes any showing tooltip if the event isn't an active one.
   cancel = (event) -> removeTooltip() unless isActive event
 
-  evSuffix = "linktoid"
-  $(document)
-    .on "mousedown.#{evSuffix}", (event) -> update event, window.location
-    .on "keyup.#{evSuffix}", cancel
-    .on "mousemove.#{evSuffix}", (event) -> enter event, window.location
-    .on "mouseout.#{evSuffix}", leave
+  document.addEventListener 'mousedown', (event) -> update event, window.location
+  document.addEventListener 'keyup', cancel
+  document.addEventListener 'mousemove', (event) -> enter event, window.location
+  document.addEventListener 'mouseout', leave
 
   # Exported for testing
   module.exports =
