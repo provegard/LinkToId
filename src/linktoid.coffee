@@ -79,8 +79,6 @@ window[chrome.i18n.getMessage "@@extension_id"] = do (module = window[chrome.i18
   # Creates the text to be used for the tooltip.
   createTooltipText = (id, distance) ->
     htmlText = "Click to navigate to <span>##{id}</span>!"
-    if distance
-      htmlText += " It's #{distance} pixels to the north, by the way."
     htmlText
   
   # Used as a mouse move handler. Creates the tooltip if necessary, otherwise
