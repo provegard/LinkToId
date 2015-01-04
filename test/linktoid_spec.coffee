@@ -139,6 +139,14 @@ describe "The LinkToId extension", ->
       
       it "ignores the event", ->
         expect(@evt.defaultPrevented).toBe false
+        
+    it "uses the capture phase and stops propagation", ->
+      @evt = createMouseEvent 'mousedown', true
+      aButton = document.getElementsByClassName('btn1')[0]
+      handler = jasmine.createSpy 'mousedown handler'
+      aButton.addEventListener 'mousedown', handler
+      aButton.dispatchEvent @evt
+      expect(handler).not.toHaveBeenCalled()
   
   describe "the mousemove handler", ->
     

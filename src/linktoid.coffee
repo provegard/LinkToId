@@ -65,8 +65,9 @@ window[chrome.i18n.getMessage "@@extension_id"] = do (module = window[chrome.i18
     # Update the hash (fragment) if we have a target, but only if
     # the current hash isn't already equal to the target ID.
     if target? and not idMatchesHash target.id
-      # Prevent default processing of this event.
+      # Prevent further processing of this event.
       event.preventDefault()
+      event.stopPropagation()
       
       removeTooltip()
       location.hash = target.id
@@ -122,7 +123,7 @@ window[chrome.i18n.getMessage "@@extension_id"] = do (module = window[chrome.i18
   # Removes any showing tooltip if the event isn't an active one.
   cancel = (event) -> removeTooltip() unless isActive event
 
-  document.addEventListener 'mousedown', update
+  document.addEventListener 'mousedown', update, true
   document.addEventListener 'keyup', cancel
   document.addEventListener 'mousemove', enter
   document.addEventListener 'mouseout', leave
