@@ -7,6 +7,7 @@
 	font: 12px "Helvetica Neue", Arial, Helvetica, Geneva, sans-serif;
 	font-weight: bold;
 	box-shadow: 0 0 5px #888;
+  z-index: 2001;
 }
 
 .tt-__MSG_@@extension_id__ span {
